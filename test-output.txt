@@ -1,0 +1,81 @@
+﻿node.exe : C:\Users\LOQ\One
+Drive\Desktop\gasullavidu\n
+ode_modules\@prisma\client\
+src\runtime\utils\validateP
+rismaClientOptions.ts:229
+At C:\Program 
+Files\nodejs\npx.ps1:29 
+char:3
++   & $NODE_EXE 
+$NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~
+    + CategoryInfo         
+     : NotSpecified: (C:\  
+  Users\LOQ\On...tOption   
+ s.ts:229:String) [], R    
+emoteException
+    + FullyQualifiedErrorI 
+   d : NativeCommandError
+ 
+    throw new PrismaClientC
+onstructorValidationError(
+          ^
+
+
+PrismaClientConstructorVali
+dationError: Using engine 
+type "client" requires 
+either "adapter" or 
+"accelerateUrl" to be 
+provided to PrismaClient 
+constructor.
+Read more at https://pris.l
+y/d/client-constructor
+    at 
+validateDependentOptions (C
+:\Users\LOQ\OneDrive\Deskto
+p\gasullavidu\node_modules\
+@prisma\client\src\runtime\
+utils\validatePrismaClientO
+ptions.ts:229:11)
+    at validatePrismaClient
+Options (C:\Users\LOQ\OneDr
+ive\Desktop\gasullavidu\nod
+e_modules\@prisma\client\sr
+c\runtime\utils\validatePri
+smaClientOptions.ts:246:3)
+    at new t (C:\Users\LOQ\
+OneDrive\Desktop\gasullavid
+u\node_modules\@prisma\clie
+nt\src\runtime\getPrismaCli
+ent.ts:342:7)
+    at <anonymous> (C:\User
+s\LOQ\OneDrive\Desktop\gasu
+llavidu\test-prisma.ts:3:16
+)
+    at Object.<anonymous> (
+C:\Users\LOQ\OneDrive\Deskt
+op\gasullavidu\test-prisma.
+ts:18:4)
+    at Module._compile (nod
+e:internal/modules/cjs/load
+er:1730:14)
+    at Object.transformer (
+C:\Users\LOQ\AppData\Local\
+npm-cache\_npx\fd45a72a5455
+57e9\node_modules\tsx\dist\
+register-D46fvsV_.cjs:3:110
+4)
+    at Module.load (node:in
+ternal/modules/cjs/loader:1
+465:32)
+    at Function._load (node
+:internal/modules/cjs/loade
+r:1282:12)
+    at 
+TracingChannel.traceSync (n
+ode:diagnostics_channel:322
+:14)
+
+Node.js v22.15.0
