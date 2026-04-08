@@ -1,20 +1,19 @@
 "use client";
 
 import Link from 'next/link';
-import { useSession, signOut } from 'next-auth/react';
-import { Flame, LayoutDashboard, LogOut, LogIn, Search, Loader2, Menu } from 'lucide-react';
+import { Flame, LayoutDashboard, LogIn, Loader2, Menu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/app/components/AuthProvider'
 import styles from './Navbar.module.css';
 
 export default function Navbar() {
-  const { data: session, status } = useSession();
-  const loading = status === 'loading';
+  const { user, loading, signOut } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 20);
+    const handler = () => setScrolled(window.scrollY > 10);
     window.addEventListener('scroll', handler);
     return () => window.removeEventListener('scroll', handler);
   }, []);
@@ -24,49 +23,54 @@ export default function Navbar() {
       className={`${styles.navbar} ${scrolled ? styles.scrolled : ''}`}
       initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
     >
-      {/* Logo */}
-      <Link href="/" className={styles.logo}>
-        <div className={styles.logoIcon}><Flame size={16} strokeWidth={2.5} /></div>
-        <span className={styles.logoText}>GasUllaVidu</span>
-      </Link>
+      <div className={styles.navContainer}>
+        {/* Logo */}
+        <Link href="/" className={styles.logo}>
+          <div className={styles.logoIcon}>
+            <Flame size={18} strokeWidth={2.5} />
+          </div>
+          <span className={styles.logoText}>GasUllaVidu</span>
+        </Link>
 
-      {/* Center Links */}
-      <div className={styles.navLinks}>
-        <Link href="/" className={styles.link}>Home</Link>
-        <Link href="/listings" className={styles.link}>Browse</Link>
-        {session && <Link href="/dashboard" className={styles.link}>Dashboard</Link>}
-      </div>
+        {/* Center Links */}
+        <div className={styles.navLinks}>
+          <Link href="/" className={styles.link}>Home</Link>
+          <Link href="/listings" className={styles.link}>Browse</Link>
+          <Link href="/listings/new" className={styles.link}>+ Share Cylinder</Link>
+          <Link href="/dashboard" className={styles.link}>Messages</Link>
+        </div>
 
-      {/* Actions */}
-      <div className={styles.actions}>
-        {loading ? (
-          <Loader2 size={18} className={styles.spin} />
-        ) : session ? (
-          <>
-            <Link href="/dashboard" className={styles.dashBtn}>
-              <LayoutDashboard size={15} /> Dashboard
-            </Link>
-            <button className={styles.ghostBtn} onClick={() => signOut({ callbackUrl: '/' })}>
-              <LogOut size={15} /> Sign Out
-            </button>
-          </>
-        ) : (
-          <>
-            <Link href="/auth/signin" className={styles.ghostBtn}>
-              <LogIn size={15} /> Sign In
-            </Link>
-            <Link href="/auth/signin" className={styles.primaryBtn}>
-              Get Started
-            </Link>
-          </>
-        )}
+        {/* Actions */}
+        <div className={styles.actions}>
+          {loading ? (
+            <Loader2 size={18} className={styles.spin} />
+          ) : user ? (
+            <>
+              <Link href="/dashboard" className="btn btn-ghost" style={{ padding: '0.5rem 1rem' }}>
+                <LayoutDashboard size={16} /> Profile
+              </Link>
+              <Link href="/listings/new" className="btn btn-primary" style={{ padding: '0.6rem 1.2rem' }}>
+                 Share Cylinder
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link href="/auth/signin" className="btn btn-ghost" style={{ padding: '0.5rem 1rem' }}>
+                <LogIn size={16} /> Login
+              </Link>
+              <Link href="/auth/signin" className="btn btn-primary" style={{ padding: '0.6rem 1.2rem' }}>
+                Get Started
+              </Link>
+            </>
+          )}
 
-        {/* Mobile Menu */}
-        <button className={styles.mobileMenuBtn} onClick={() => setMobileOpen(p => !p)}>
-          <Menu size={20} />
-        </button>
+          {/* Mobile Menu */}
+          <button className={styles.mobileMenuBtn} onClick={() => setMobileOpen(p => !p)}>
+            <Menu size={22} color="var(--text-primary)" />
+          </button>
+        </div>
       </div>
 
       {/* Mobile Drawer */}
@@ -74,29 +78,31 @@ export default function Navbar() {
         {mobileOpen && (
           <motion.div
             className={styles.mobileMenu}
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
+            initial={{ opacity: 0, scale: 0.95, y: -10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -10 }}
+            transition={{ duration: 0.2 }}
           >
             <Link href="/" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>Home</Link>
             <Link href="/listings" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>
-              <Search size={15} /> Browse Listings
+              Browse Listings
             </Link>
-            {session ? (
+            <Link href="/listings/new" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>
+              + Share Cylinder
+            </Link>
+            {user ? (
               <>
                 <Link href="/dashboard" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>
-                  <LayoutDashboard size={15} /> Dashboard
+                  Profile & Dashboard
                 </Link>
-                <button className={`${styles.mobileLink} ${styles.mobileDanger}`} onClick={() => { signOut({ callbackUrl: '/' }); setMobileOpen(false); }}>
-                  <LogOut size={15} /> Sign Out
+                <button className={`${styles.mobileLink} ${styles.mobileDanger}`} onClick={async () => { await signOut(); setMobileOpen(false); }}>
+                  Sign Out
                 </button>
               </>
             ) : (
-              <>
-                <Link href="/auth/signin" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>
-                  <LogIn size={15} /> Sign In
-                </Link>
-              </>
+              <Link href="/auth/signin" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>
+                Sign In
+              </Link>
             )}
           </motion.div>
         )}

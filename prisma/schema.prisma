@@ -1,10 +1,12 @@
 generator client {
   provider        = "prisma-client-js"
   engineType      = "library"
+  previewFeatures = ["mongodb"]
 }
 
 datasource db {
   provider = "mongodb"
+  url      = env("DATABASE_URL")
 }
 
 model Account {
@@ -39,11 +41,11 @@ model Session {
 
 model User {
   id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  firebaseUid   String?   @unique @map("firebase_uid")
   name          String?
   email         String?   @unique
   emailVerified DateTime? @map("email_verified")
   image         String?
-  password      String?   // Hashed password for email/password auth
   createdAt     DateTime  @default(now()) @map("created_at")
   accounts      Account[]
   sessions      Session[]

@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getCurrentUser } from '@/lib/firebase/server'
 import { prisma } from '@/lib/prisma'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.id) {
+  const currentUser = await getCurrentUser()
+  if (!currentUser?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -20,7 +19,7 @@ export async function POST(req: NextRequest) {
   }
 
   const updated = await prisma.user.update({
-    where: { id: session.user.id },
+    where: { id: currentUser.id },
     data: {
       name,
       phone,

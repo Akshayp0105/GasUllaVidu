@@ -1,71 +1,93 @@
 "use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { UploadButton } from '@uploadthing/react';
-import type { OurFileRouter } from '@/app/api/uploadthing/core';
-import { User, MapPin, Phone, ShieldCheck, CreditCard, FileText, Car, CheckCircle2, Upload } from 'lucide-react';
-import styles from './onboarding.module.css';
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
+import { UploadButton } from '@uploadthing/react'
+import type { OurFileRouter } from '@/app/api/uploadthing/core'
+import { User, MapPin, Phone, ShieldCheck, CreditCard, FileText, Car, CheckCircle2, Upload } from 'lucide-react'
+import { useAuth } from '@/app/components/AuthProvider'
+import styles from './onboarding.module.css'
 
 const ID_TYPES = [
   { value: 'AADHAAR', label: 'Aadhar Card', icon: CreditCard, hint: '12-digit UID number' },
   { value: 'PAN', label: 'PAN Card', icon: FileText, hint: 'ABCDE1234F format' },
-  { value: 'DRIVING_LICENSE', label: "Driving Licence", icon: Car, hint: 'State-issued DL number' },
+  { value: 'DRIVING_LICENSE', label: 'Driving Licence', icon: Car, hint: 'State-issued DL number' },
   { value: 'VOTER_ID', label: 'Voter ID', icon: ShieldCheck, hint: 'Election Commission ID' },
-];
+]
 
-const STEPS = ['Personal Info', 'Address', 'ID Verification'];
+const STEPS = ['Personal Info', 'Address', 'ID Verification']
 
 export default function OnboardingPage() {
-  const router = useRouter();
-  const { data: session } = useSession();
-  const [step, setStep] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [uploadedUrl, setUploadedUrl] = useState('');
-  const [uploading, setUploading] = useState(false);
-
+  const router = useRouter()
+  const { user, loading: authLoading } = useAuth()
+  const [step, setStep] = useState(0)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [uploadedUrl, setUploadedUrl] = useState('')
+  const [uploading, setUploading] = useState(false)
   const [form, setForm] = useState({
-    name: session?.user?.name || '',
+    name: '',
     phone: '',
     address: '',
     idProofType: '',
     idProofNumber: '',
-  });
+  })
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace('/auth/signin')
+    }
+  }, [authLoading, router, user])
+
+  useEffect(() => {
+    if (user?.displayName) {
+      setForm((current) => ({
+        ...current,
+        name: current.name || user.displayName || '',
+      }))
+    }
+  }, [user])
 
   const update = (field: string, value: string) =>
-    setForm((p) => ({ ...p, [field]: value }));
+    setForm((current) => ({ ...current, [field]: value }))
 
   const validateStep = () => {
     if (step === 0) {
-      if (!form.name.trim()) return 'Full name is required.';
-      if (!/^\d{10}$/.test(form.phone)) return 'Enter a valid 10-digit phone number.';
+      if (!form.name.trim()) return 'Full name is required.'
+      if (!/^\d{10}$/.test(form.phone)) return 'Enter a valid 10-digit phone number.'
     }
     if (step === 1) {
-      if (form.address.trim().length < 15) return 'Please enter your full address (min 15 chars).';
+      if (form.address.trim().length < 15) return 'Please enter your full address (min 15 chars).'
     }
     if (step === 2) {
-      if (!form.idProofType) return 'Please select an ID type.';
-      if (!form.idProofNumber.trim()) return 'Please enter the ID number.';
-      if (!uploadedUrl) return 'Please upload a photo or scan of your ID document.';
+      if (!form.idProofType) return 'Please select an ID type.'
+      if (!form.idProofNumber.trim()) return 'Please enter the ID number.'
+      if (!uploadedUrl) return 'Please upload a photo or scan of your ID document.'
     }
-    return '';
-  };
+    return ''
+  }
 
   const handleNext = () => {
-    const err = validateStep();
-    if (err) { setError(err); return; }
-    setError('');
-    setStep((s) => s + 1);
-  };
+    const nextError = validateStep()
+    if (nextError) {
+      setError(nextError)
+      return
+    }
+    setError('')
+    setStep((current) => current + 1)
+  }
 
   const handleSubmit = async () => {
-    const err = validateStep();
-    if (err) { setError(err); return; }
-    setLoading(true);
-    setError('');
+    const nextError = validateStep()
+    if (nextError) {
+      setError(nextError)
+      return
+    }
+
+    setLoading(true)
+    setError('')
+
     try {
       const res = await fetch('/api/profile/complete', {
         method: 'POST',
@@ -78,22 +100,24 @@ export default function OnboardingPage() {
           idProofNumber: form.idProofNumber,
           idProofDocUrl: uploadedUrl,
         }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Something went wrong');
-      router.push('/dashboard');
-    } catch (e: any) {
-      setError(e.message);
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || 'Something went wrong')
+      }
+      router.push('/dashboard')
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Something went wrong')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const itemVariants = {
     hidden: { opacity: 0, x: 20 },
     show: { opacity: 1, x: 0, transition: { type: 'spring' as const, stiffness: 80, damping: 17 } },
     exit: { opacity: 0, x: -20 },
-  };
+  }
 
   return (
     <div className={styles.container}>
@@ -105,26 +129,23 @@ export default function OnboardingPage() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.4 }}
       >
-        {/* Header */}
         <div className={styles.header}>
           <div className={styles.stepBadge}>Step {step + 1} of {STEPS.length}</div>
           <h1 className={styles.title}>Complete Your Profile</h1>
           <p className={styles.subtitle}>This is required to trade on GasUllaVidu. Your data is encrypted and safe.</p>
         </div>
 
-        {/* Progress Bar */}
         <div className={styles.progressTrack}>
-          {STEPS.map((s, i) => (
-            <div key={s} className={`${styles.progressStep} ${i <= step ? styles.progressActive : ''}`}>
+          {STEPS.map((label, index) => (
+            <div key={label} className={`${styles.progressStep} ${index <= step ? styles.progressActive : ''}`}>
               <div className={styles.progressDot}>
-                {i < step ? <CheckCircle2 size={14} /> : <span>{i + 1}</span>}
+                {index < step ? <CheckCircle2 size={14} /> : <span>{index + 1}</span>}
               </div>
-              <span className={styles.progressLabel}>{s}</span>
+              <span className={styles.progressLabel}>{label}</span>
             </div>
           ))}
         </div>
 
-        {/* Step Content */}
         <AnimatePresence mode="wait">
           {step === 0 && (
             <motion.div key="step0" variants={itemVariants} initial="hidden" animate="show" exit="exit" className={styles.stepContent}>
@@ -134,7 +155,7 @@ export default function OnboardingPage() {
                   className={styles.input}
                   placeholder="e.g. Ramesh Kumar"
                   value={form.name}
-                  onChange={e => update('name', e.target.value)}
+                  onChange={(e) => update('name', e.target.value)}
                 />
               </div>
               <div className={styles.fieldGroup}>
@@ -146,7 +167,7 @@ export default function OnboardingPage() {
                     placeholder="9876543210"
                     value={form.phone}
                     maxLength={10}
-                    onChange={e => update('phone', e.target.value.replace(/\D/g, ''))}
+                    onChange={(e) => update('phone', e.target.value.replace(/\D/g, ''))}
                   />
                 </div>
               </div>
@@ -161,10 +182,10 @@ export default function OnboardingPage() {
                   className={`${styles.input} ${styles.textarea}`}
                   placeholder="House No., Street, Area, City, State, PIN Code"
                   value={form.address}
-                  onChange={e => update('address', e.target.value)}
+                  onChange={(e) => update('address', e.target.value)}
                   rows={4}
                 />
-                <span className={styles.hint}>This address will be used for cylinder pickup/delivery proximity.</span>
+                <span className={styles.hint}>This address will be used for cylinder pickup and delivery proximity.</span>
               </div>
             </motion.div>
           )}
@@ -190,17 +211,13 @@ export default function OnboardingPage() {
               </div>
 
               {form.idProofType && (
-                <motion.div
-                  className={styles.fieldGroup}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
+                <motion.div className={styles.fieldGroup} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                   <label className={styles.label}>ID Number</label>
                   <input
                     className={styles.input}
-                    placeholder={ID_TYPES.find(t => t.value === form.idProofType)?.hint}
+                    placeholder={ID_TYPES.find((type) => type.value === form.idProofType)?.hint}
                     value={form.idProofNumber}
-                    onChange={e => update('idProofNumber', e.target.value.toUpperCase())}
+                    onChange={(e) => update('idProofNumber', e.target.value.toUpperCase())}
                   />
                 </motion.div>
               )}
@@ -218,41 +235,39 @@ export default function OnboardingPage() {
                     <div className={styles.uploadPrompt}>
                       <Upload size={28} color="rgba(255,255,255,0.4)" />
                       <p>Upload a clear photo or scanned copy</p>
-                      <small>JPG, PNG, or PDF · Max 4MB</small>
+                      <small>JPG, PNG, or PDF max 4MB</small>
                       <UploadButton<OurFileRouter, 'idProofUploader'>
                         endpoint="idProofUploader"
                         onUploadBegin={() => setUploading(true)}
                         onClientUploadComplete={(res) => {
-                          setUploading(false);
-                          if (res?.[0]?.url) setUploadedUrl(res[0].url);
+                          setUploading(false)
+                          if (res?.[0]?.url) setUploadedUrl(res[0].url)
                         }}
                         onUploadError={(error) => {
-                          setUploading(false);
-                          setError(`Upload failed: ${error.message}`);
+                          setUploading(false)
+                          setError(`Upload failed: ${error.message}`)
                         }}
                         className={styles.uploadBtn}
                       />
-                      {uploading && <div className={styles.uploadingText}>Uploading…</div>}
+                      {uploading && <div className={styles.uploadingText}>Uploading...</div>}
                     </div>
                   )}
                 </div>
-                <span className={styles.hint}>⚠️ Without a valid ID document upload, you cannot create an account.</span>
+                <span className={styles.hint}>Without a valid ID document upload, you cannot create an account.</span>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Error */}
         {error && (
           <motion.div className={styles.error} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             {error}
           </motion.div>
         )}
 
-        {/* Navigation */}
         <div className={styles.navButtons}>
           {step > 0 && (
-            <button className={styles.backBtn} onClick={() => { setStep(s => s - 1); setError(''); }}>
+            <button className={styles.backBtn} onClick={() => { setStep((current) => current - 1); setError('') }}>
               Back
             </button>
           )}
@@ -263,7 +278,7 @@ export default function OnboardingPage() {
               whileTap={{ scale: 0.98 }}
               onClick={handleNext}
             >
-              Continue →
+              Continue
             </motion.button>
           ) : (
             <motion.button
@@ -273,11 +288,11 @@ export default function OnboardingPage() {
               onClick={handleSubmit}
               disabled={loading}
             >
-              {loading ? 'Creating Profile…' : '🎉 Complete Profile'}
+              {loading ? 'Creating Profile...' : 'Complete Profile'}
             </motion.button>
           )}
         </div>
       </motion.div>
     </div>
-  );
+  )
 }

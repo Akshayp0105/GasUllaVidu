@@ -1,19 +1,18 @@
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getCurrentUser } from '@/lib/firebase/server'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 
 // This is a transparent redirect page that checks the profileComplete flag
 // and routes the user to the right place
 export default async function OnboardingCheckPage() {
-  const session = await getServerSession(authOptions)
+  const currentUser = await getCurrentUser()
 
-  if (!session?.user?.id) {
+  if (!currentUser?.id) {
     redirect('/auth/signin')
   }
 
   const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
+    where: { id: currentUser.id },
     select: { profileComplete: true },
   })
 

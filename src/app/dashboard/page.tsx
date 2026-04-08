@@ -1,21 +1,20 @@
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getCurrentUser } from '@/lib/firebase/server'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
-import DashboardClient from './DashboardClient'
+import DashboardClient, { type DBUser } from './DashboardClient'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 export default async function DashboardPage() {
-  const session = await getServerSession(authOptions)
+  const currentUser = await getCurrentUser()
 
-  if (!session?.user?.id) {
+  if (!currentUser?.id) {
     redirect('/auth/signin')
   }
 
   const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
+    where: { id: currentUser.id },
     select: {
       id: true,
       name: true,
@@ -41,5 +40,5 @@ export default async function DashboardPage() {
     redirect('/onboarding')
   }
 
-  return <DashboardClient user={user as any} />
+  return <DashboardClient user={user as unknown as DBUser} />
 }
