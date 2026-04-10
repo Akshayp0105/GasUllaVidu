@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/firebase/server'
-import { prisma } from '@/lib/prisma'
+import { adminDb } from '@/lib/firebase/admin'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -18,18 +18,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'All fields are required including ID proof upload.' }, { status: 400 })
   }
 
-  const updated = await prisma.user.update({
-    where: { id: currentUser.id },
-    data: {
-      name,
-      phone,
-      address,
-      idProofType,
-      idProofNumber,
-      idProofDocUrl,
-      profileComplete: true,
-    },
-  })
+  const updateData = {
+    name,
+    phone,
+    address,
+    idProofType,
+    idProofNumber,
+    idProofDocUrl,
+    profileComplete: true,
+  }
 
-  return NextResponse.json({ success: true, user: updated })
+  await adminDb.collection('users').doc(currentUser.id).update(updateData)
+
+  return NextResponse.json({ success: true, user: { id: currentUser.id, ...updateData } })
 }

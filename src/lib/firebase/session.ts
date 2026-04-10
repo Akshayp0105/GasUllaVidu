@@ -8,35 +8,35 @@ async function wait(ms: number) {
 }
 
 export async function syncFirebaseSession(idToken: string, profile?: SessionProfile) {
-  const delays = [0, 250, 750]
   let lastError: Error | null = null
 
-  for (const delay of delays) {
-    if (delay > 0) {
-      await wait(delay)
+  // We perform a single retry if the initial attempt fails due to a transient network error
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const response = await fetch('/api/auth/session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          idToken,
+          name: profile?.name ?? null,
+          image: profile?.image ?? null,
+        }),
+      })
+
+      const data = await response.json().catch(() => ({}))
+
+      if (response.ok) {
+        return data
+      }
+
+      lastError = new Error(
+        typeof data?.error === 'string' ? data.error : 'Unable to start your session.'
+      )
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error('Network error during session sync.')
     }
-
-    const response = await fetch('/api/auth/session', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        idToken,
-        name: profile?.name ?? null,
-        image: profile?.image ?? null,
-      }),
-    })
-
-    const data = await response.json().catch(() => ({}))
-
-    if (response.ok) {
-      return data
-    }
-
-    lastError = new Error(
-      typeof data?.error === 'string' ? data.error : 'Unable to start your session.'
-    )
   }
 
   throw lastError ?? new Error('Unable to start your session.')

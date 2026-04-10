@@ -13,8 +13,8 @@ export const dynamic = 'force-dynamic'
 const cookieOptions = {
   httpOnly: true,
   path: '/',
-  sameSite: 'lax' as const,
-  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax' as const, // Lax is generally better for oauth redirects
+  secure: process.env.NODE_ENV === 'production', // Only secure in production (requires HTTPS)
   maxAge: APP_SESSION_TTL_SECONDS,
 }
 
@@ -26,6 +26,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const { idToken, name, image } = await req.json()
+    console.log('Session request received for token:', idToken?.substring(0, 20) + '...')
 
     if (typeof idToken !== 'string' || idToken.length === 0) {
       return NextResponse.json({ error: 'Missing Firebase ID token.' }, { status: 400 })
@@ -33,6 +34,9 @@ export async function POST(req: NextRequest) {
 
     const { user } = await syncUserFromFirebaseToken(idToken, { name, image })
     const sessionToken = await createAppSessionToken(user.id)
+    
+    console.log('Session created for user:', user.id)
+
     const response = NextResponse.json({
       success: true,
       user: {
@@ -45,7 +49,13 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    response.cookies.set(FIREBASE_SESSION_COOKIE, sessionToken, cookieOptions)
+    // Explicitly set cookie on the response object
+    response.cookies.set(FIREBASE_SESSION_COOKIE, sessionToken, {
+      ...cookieOptions,
+      // Ensure we don't accidentally override the expiry
+      expires: new Date(Date.now() + APP_SESSION_TTL_SECONDS * 1000),
+    })
+
     return response
   } catch (error) {
     console.error('Failed to create Firebase session:', error)

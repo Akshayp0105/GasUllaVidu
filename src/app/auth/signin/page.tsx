@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -62,7 +62,7 @@ async function resetFailedFirebaseLogin() {
 
 export default function SignInPage() {
   const router = useRouter()
-  const { syncSession } = useAuth()
+  const { user: authUser, loading: authLoading, syncSession } = useAuth()
   const [tab, setTab] = useState<'signin' | 'signup'>('signin')
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -70,6 +70,32 @@ export default function SignInPage() {
   const [redirecting, setRedirecting] = useState(false)
   const [error, setError] = useState('')
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' })
+
+  // Auto-redirect if already signed in
+  useEffect(() => {
+    let mounted = true
+
+    if (authUser && !authLoading && !redirecting) {
+      setRedirecting(true)
+      
+      // We must ensure the backend session is created for this Firebase user
+      // If it fails (e.g., deleted from DB), it stops the redirect loop.
+      syncSession(authUser)
+        .then(() => {
+          if (mounted) window.location.href = '/onboarding-check'
+        })
+        .catch(async (error) => {
+          console.error("Auto-sync failed", error)
+          await auth.signOut().catch(() => {})
+          if (mounted) {
+            setRedirecting(false)
+            setError('Your login session expired. Please sign in again.')
+          }
+        })
+    }
+
+    return () => { mounted = false }
+  }, [authUser, authLoading, redirecting, syncSession])
 
   const update = (key: string, value: string) => setForm((current) => ({ ...current, [key]: value }))
 
@@ -82,7 +108,7 @@ export default function SignInPage() {
       const result = await signInWithPopup(auth, googleProvider)
       await syncSession(result.user)
       setRedirecting(true)
-      router.replace('/onboarding-check')
+      window.location.href = '/onboarding-check'
     } catch (error) {
       await resetFailedFirebaseLogin()
       setError(getFirebaseErrorMessage(error))
@@ -101,7 +127,7 @@ export default function SignInPage() {
       const result = await signInWithEmailAndPassword(auth, form.email, form.password)
       await syncSession(result.user)
       setRedirecting(true)
-      router.replace('/onboarding-check')
+      window.location.href = '/onboarding-check'
     } catch (error) {
       await resetFailedFirebaseLogin()
       setError(getFirebaseErrorMessage(error))
@@ -135,7 +161,7 @@ export default function SignInPage() {
       }
       await syncSession(auth.currentUser ?? result.user)
       setRedirecting(true)
-      router.replace('/onboarding-check')
+      window.location.href = '/onboarding-check'
     } catch (error) {
       await resetFailedFirebaseLogin()
       setError(getFirebaseErrorMessage(error))

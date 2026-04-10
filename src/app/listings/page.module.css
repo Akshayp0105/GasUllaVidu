@@ -1,16 +1,32 @@
 .pageContainer {
   display: grid;
-  grid-template-columns: 240px 1fr;
-  min-height: calc(100vh - 80px); /* Minus navbar */
+  grid-template-columns: 280px 1fr;
+  min-height: calc(100vh - 72px);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  padding-top: 72px;
 }
 
 .sidebar {
   border-right: 1px solid var(--border-color);
-  padding: 2rem;
+  padding: 2rem 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  background: white;
+  gap: 0.5rem;
+  background: var(--bg-secondary);
+  height: calc(100vh - 72px);
+  position: sticky;
+  top: 72px;
+}
+
+.sidebarTitle {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0 1rem;
+  margin-bottom: 1rem;
 }
 
 .sidebarItem {
@@ -18,33 +34,50 @@
   align-items: center;
   gap: 1rem;
   color: var(--text-secondary);
-  font-weight: 500;
-  padding: 0.75rem 1rem;
-  border-radius: var(--border-radius-sm);
+  font-weight: 600;
+  padding: 0.875rem 1rem;
+  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 0.9375rem;
+  text-decoration: none;
 }
 
 .sidebarItem:hover, .sidebarItem.active {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
 }
 
 .sidebarItem.active {
   color: var(--accent-primary);
-  background: rgba(15, 76, 218, 0.05);
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+}
+
+.aiAssistant {
+  margin-top: auto;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  color: #fff;
+  justify-content: center;
+}
+
+.aiAssistant:hover {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
 }
 
 .mainLayout {
   display: grid;
-  grid-template-columns: 1fr 400px;
+  grid-template-columns: 1fr 450px;
+  background: var(--bg-primary);
 }
 
 .contentArea {
-  padding: 2rem;
+  padding: 3rem 4rem;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 80px);
+  height: calc(100vh - 72px);
   overflow-y: auto;
 }
 
@@ -52,17 +85,26 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 3rem;
+  gap: 2rem;
 }
 
 .searchBar {
   display: flex;
   align-items: center;
-  background: var(--bg-tertiary);
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border-color);
-  padding: 0.5rem 1rem;
+  padding: 0.75rem 1.25rem;
   border-radius: 999px;
-  width: 350px;
+  flex: 1;
+  max-width: 500px;
+  transition: all 0.3s;
+}
+
+.searchBar:focus-within {
+  border-color: var(--accent-primary);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
 }
 
 .searchInput {
@@ -70,55 +112,91 @@
   background: transparent;
   outline: none;
   flex: 1;
-  padding-left: 0.5rem;
-  font-size: 0.95rem;
+  padding-left: 0.75rem;
+  font-size: 1rem;
+  color: #fff;
+}
+
+.searchInput::placeholder {
+  color: var(--text-muted);
+}
+
+.locationBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.75rem 1.25rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+}
+
+.sectionHeader {
+  font-size: 0.8125rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  letter-spacing: 0.15em;
+  margin-bottom: 1.5rem;
 }
 
 .filters {
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
+  gap: 0.75rem;
+  margin-bottom: 3rem;
+  padding-bottom: 1.5rem;
   border-bottom: 1px solid var(--border-color);
-  padding-bottom: 1rem;
 }
 
 .filterBtn {
-  background: white;
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
-  padding: 0.4rem 1rem;
+  padding: 0.625rem 1.25rem;
   border-radius: 999px;
-  font-size: 0.85rem;
-  font-weight: 500;
+  font-size: 0.9375rem;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filterBtn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
 }
 
 .filterBtn.active {
-  background: var(--bg-primary);
-  border-color: var(--accent-primary);
-  color: var(--accent-primary);
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: var(--accent-secondary);
 }
 
 .list {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .card {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: white;
+  background: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--border-color);
-  padding: 1.5rem;
-  border-radius: var(--border-radius);
-  transition: all 0.2s;
+  padding: 1.75rem;
+  border-radius: 20px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
 }
 
 .card:hover {
-  box-shadow: var(--shadow-md);
-  border-color: #cbd5e1;
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
 }
 
 .cardLeft {
@@ -128,105 +206,120 @@
 }
 
 .brandIcon {
-  width: 50px;
-  height: 50px;
-  border-radius: 12px;
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  font-weight: bold;
+  font-weight: 800;
+  font-size: 1.5rem;
+  font-family: var(--font-display);
 }
 
-.Indane { background: var(--indane); }
-.HP { background: var(--hp); }
-.Bharat { background: var(--bharat); }
+.Indane { background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
+.HP { background: linear-gradient(135deg, #3b82f6, #2563eb); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+.Bharat { background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3); }
 
 .cardInfo h3 {
-  font-size: 1.1rem;
-  margin-bottom: 0.25rem;
+  font-size: 1.375rem;
+  margin-bottom: 0.5rem;
+  color: #fff;
+  font-family: var(--font-display);
 }
 
 .cardTags {
   display: flex;
   gap: 1rem;
   align-items: center;
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   color: var(--text-secondary);
+  margin-bottom: 1rem;
 }
 
 .levelBarContainer {
-  width: 150px;
-  margin-top: 0.5rem;
+  width: 200px;
 }
 
 .levelHeader {
   display: flex;
   justify-content: space-between;
   font-size: 0.75rem;
-  margin-bottom: 0.25rem;
-  font-weight: 600;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
   text-transform: uppercase;
   color: var(--text-muted);
 }
 
 .levelBar {
   width: 100%;
-  height: 6px;
-  background: var(--bg-secondary);
+  height: 8px;
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 999px;
   overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
 }
 
 .levelFill {
   height: 100%;
-  background: var(--accent-primary);
   border-radius: 999px;
+  transition: width 0.5s ease-out;
 }
 
 .cardRight {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 0.75rem;
+  gap: 1rem;
 }
 
 .price {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--text-primary);
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #fff;
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
 }
 
 .price span {
-  font-size: 0.85rem;
+  font-size: 0.9375rem;
   color: var(--text-secondary);
-  font-weight: 400;
+  font-weight: 500;
+  font-family: var(--font-sans);
 }
 
 .mapArea {
   border-left: 1px solid var(--border-color);
   background: var(--bg-secondary);
   position: relative;
-  height: calc(100vh - 80px);
+  height: calc(100vh - 72px);
+  position: sticky;
+  top: 72px;
 }
 
 .mapImage {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  opacity: 0.85;
+  filter: contrast(1.2) brightness(0.8) saturate(0.8);
 }
 
 .mapOverlay {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: white;
-  padding: 0.5rem 1rem;
+  top: 1.5rem;
+  right: 1.5rem;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(12px);
+  padding: 0.75rem 1.25rem;
   border-radius: 999px;
-  box-shadow: var(--shadow-sm);
-  font-size: 0.85rem;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  font-size: 0.875rem;
   font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
+  color: #fff;
 }

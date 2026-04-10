@@ -1,4 +1,5 @@
 import { getApp, getApps, initializeApp } from 'firebase/app'
+import { getFirestore } from 'firebase/firestore'
 import {
   GoogleAuthProvider,
   browserLocalPersistence,
@@ -9,6 +10,7 @@ import { firebaseConfig } from '@/lib/firebase/config'
 
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig)
 const auth = getAuth(app)
+const db = getFirestore(app)
 const googleProvider = new GoogleAuthProvider()
 
 googleProvider.setCustomParameters({ prompt: 'select_account' })
@@ -27,4 +29,4 @@ export function ensureFirebasePersistence() {
   return persistencePromise
 }
 
-export { app, auth, googleProvider }
+export { app, auth, db, googleProvider }

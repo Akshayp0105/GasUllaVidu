@@ -8,7 +8,7 @@ import {
   type JWTPayload,
 } from 'jose'
 import { firebaseProjectId } from '@/lib/firebase/config'
-import { prisma } from '@/lib/prisma'
+import { adminDb } from '@/lib/firebase/admin'
 
 const FIREBASE_CERTS_URL =
   'https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com'
@@ -106,11 +106,24 @@ export async function verifyFirebaseIdToken(idToken: string) {
 }
 
 async function findUserByFirebaseIdentity(uid: string, email?: string) {
-  return prisma.user.findFirst({
-    where: {
-      OR: [{ firebaseUid: uid }, ...(email ? [{ email }] : [])],
-    },
-  })
+  const userRef = adminDb.collection('users').where('firebaseUid', '==', uid).limit(1)
+  const snapshot = await userRef.get()
+  
+  if (!snapshot.empty) {
+    const doc = snapshot.docs[0]
+    return { id: doc.id, ...doc.data() } as any
+  }
+
+  if (email) {
+    const emailRef = adminDb.collection('users').where('email', '==', email).limit(1)
+    const emailSnapshot = await emailRef.get()
+    if (!emailSnapshot.empty) {
+      const doc = emailSnapshot.docs[0]
+      return { id: doc.id, ...doc.data() } as any
+    }
+  }
+
+  return null
 }
 
 export async function syncUserFromFirebaseToken(idToken: string, profile?: SyncProfile) {
@@ -143,32 +156,29 @@ export async function syncUserFromFirebaseToken(idToken: string, profile?: SyncP
       updates.image = image
     }
 
-    const user =
-      Object.keys(updates).length > 0
-        ? await prisma.user.update({
-            where: { id: existingUser.id },
-            data: updates,
-          })
-        : existingUser
+    if (Object.keys(updates).length > 0) {
+      await adminDb.collection('users').doc(existingUser.id).update(updates)
+      return { claims, user: { ...existingUser, ...updates } }
+    }
 
-    return { claims, user }
+    return { claims, user: existingUser }
   }
 
   if (!email) {
     throw new Error('Firebase account is missing an email address.')
   }
 
-  const user = await prisma.user.create({
-    data: {
-      firebaseUid: claims.sub,
-      email,
-      name,
-      image,
-      profileComplete: false,
-    },
-  })
+  const newUser = {
+    firebaseUid: claims.sub,
+    email,
+    name,
+    image,
+    profileComplete: false,
+    createdAt: new Date().toISOString(),
+  }
 
-  return { claims, user }
+  const userDoc = await adminDb.collection('users').add(newUser)
+  return { claims, user: { id: userDoc.id, ...newUser } }
 }
 
 export async function getCurrentUser() {
@@ -187,9 +197,10 @@ export async function getCurrentUser() {
       return null
     }
 
-    return prisma.user.findUnique({
-      where: { id: userId },
-    })
+    const doc = await adminDb.collection('users').doc(userId).get()
+    if (!doc.exists) return null
+
+    return { id: doc.id, ...doc.data() } as any
   } catch {
     return null
   }
