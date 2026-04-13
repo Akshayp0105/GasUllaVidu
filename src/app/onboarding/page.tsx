@@ -1,10 +1,8 @@
 "use client";
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ChangeEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { UploadButton } from '@uploadthing/react'
-import type { OurFileRouter } from '@/app/api/uploadthing/core'
 import { User, MapPin, Phone, ShieldCheck, CreditCard, FileText, Car, CheckCircle2, Upload } from 'lucide-react'
 import { useAuth } from '@/app/components/AuthProvider'
 import styles from './onboarding.module.css'
@@ -17,6 +15,14 @@ const ID_TYPES = [
 ]
 
 const STEPS = ['Personal Info', 'Address', 'ID Verification']
+
+function getUploadErrorMessage(message: string) {
+  if (message.includes('Failed to fetch')) {
+    return 'Upload request failed. Check that the app is running and try again.'
+  }
+
+  return `Upload failed: ${message}`
+}
 
 export default function OnboardingPage() {
   const router = useRouter()
@@ -51,6 +57,49 @@ export default function OnboardingPage() {
 
   const update = (field: string, value: string) =>
     setForm((current) => ({ ...current, [field]: value }))
+
+  const handleFileUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf']
+    if (!allowedTypes.includes(file.type)) {
+      setError('Only JPG, PNG, and PDF files are allowed.')
+      event.target.value = ''
+      return
+    }
+
+    if (file.size > 4 * 1024 * 1024) {
+      setError('File size must be 4MB or less.')
+      event.target.value = ''
+      return
+    }
+
+    setUploading(true)
+    setError('')
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const res = await fetch('/api/profile/upload-document', {
+        method: 'POST',
+        body: formData,
+      })
+
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || 'Upload request failed.')
+      }
+
+      setUploadedUrl(data.url)
+    } catch (error) {
+      setError(getUploadErrorMessage(error instanceof Error ? error.message : 'Unknown upload error'))
+    } finally {
+      setUploading(false)
+      event.target.value = ''
+    }
+  }
 
   const validateStep = () => {
     if (step === 0) {
@@ -236,19 +285,16 @@ export default function OnboardingPage() {
                       <Upload size={28} color="rgba(255,255,255,0.4)" />
                       <p>Upload a clear photo or scanned copy</p>
                       <small>JPG, PNG, or PDF max 4MB</small>
-                      <UploadButton<OurFileRouter, 'idProofUploader'>
-                        endpoint="idProofUploader"
-                        onUploadBegin={() => setUploading(true)}
-                        onClientUploadComplete={(res) => {
-                          setUploading(false)
-                          if (res?.[0]?.url) setUploadedUrl(res[0].url)
-                        }}
-                        onUploadError={(error) => {
-                          setUploading(false)
-                          setError(`Upload failed: ${error.message}`)
-                        }}
-                        className={styles.uploadBtn}
-                      />
+                      <label className={styles.uploadBtn}>
+                        <span>{uploading ? 'Uploading...' : 'Choose file'}</span>
+                        <input
+                          type="file"
+                          accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
+                          onChange={handleFileUpload}
+                          disabled={uploading}
+                          className={styles.fileInput}
+                        />
+                      </label>
                       {uploading && <div className={styles.uploadingText}>Uploading...</div>}
                     </div>
                   )}

@@ -1,6 +1,19 @@
-import { createRouteHandler } from 'uploadthing/next'
-import { ourFileRouter } from './core'
+import { NextResponse } from 'next/server'
 
-export const { GET, POST } = createRouteHandler({
-  router: ourFileRouter,
-})
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
+function deprecatedResponse() {
+  return NextResponse.json(
+    { error: 'UploadThing has been removed. Use /api/profile/upload-document instead.' },
+    { status: 410 }
+  )
+}
+
+export async function GET() {
+  return deprecatedResponse()
+}
+
+export async function POST() {
+  return deprecatedResponse()
+}

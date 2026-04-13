@@ -1,35 +1,37 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, MapPin, LayoutDashboard, Flame, Target, MessageSquare, ChevronRight } from 'lucide-react';
+import { Search, MapPin, LayoutDashboard, Flame, Target, MessageSquare, ChevronRight, Loader2 } from 'lucide-react';
+import { db } from '@/lib/firebase/client';
+import { subscribeToListings, type ListingView } from '@/lib/firebase/listings';
 import styles from './page.module.css';
-
-interface Listing {
-  id: string;
-  brand: 'Indane' | 'HP' | 'Bharat';
-  weight: string;
-  condition: string;
-  level: number;
-  levelMethod: string;
-  price: number;
-  delivery: string;
-  distance: string;
-}
-
-const listingsData: Listing[] = [
-  { id: '1', brand: 'Indane', weight: '14.2kg', condition: 'Factory Sealed', level: 100, levelMethod: 'Weight Test', price: 1050, delivery: 'Home Delivery', distance: '1.2' },
-  { id: '2', brand: 'Bharat', weight: '14.2kg', condition: 'Used (Open)', level: 45, levelMethod: 'Water Test', price: 450, delivery: 'Pickup Only', distance: '2.5' },
-  { id: '3', brand: 'HP', weight: '19kg', condition: 'Factory Sealed', level: 100, levelMethod: 'Weight Test', price: 1800, delivery: 'Meeting Point', distance: '0.8' },
-  { id: '4', brand: 'Indane', weight: '5kg', condition: 'Used', level: 20, levelMethod: 'Estimation', price: 350, delivery: 'Pickup', distance: '3.1' },
-];
 
 export default function ListingsPage() {
   const [filter, setFilter] = useState('All Brands');
+  const [listings, setListings] = useState<ListingView[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredListings = listingsData.filter(item => 
-    filter === 'All Brands' || item.brand === filter.split(' ')[0]
+  useEffect(() => {
+    const unsubscribe = subscribeToListings(
+      db,
+      (nextListings) => {
+        setListings(nextListings);
+        setLoading(false);
+      },
+      (error) => {
+        console.error('Error loading listings:', error);
+        setListings([]);
+        setLoading(false);
+      },
+    );
+
+    return unsubscribe;
+  }, []);
+
+  const filteredListings = listings.filter(
+    (item) => filter === 'All Brands' || item.brand.includes(filter.split(' ')[0]),
   );
 
   return (
@@ -82,63 +84,72 @@ export default function ListingsPage() {
           </div>
 
           <div className={styles.list}>
-            <AnimatePresence>
-               {filteredListings.map((listing, i) => (
-                 <motion.div
-                   key={listing.id}
-                   initial={{ opacity: 0, y: 20 }}
-                   animate={{ opacity: 1, y: 0 }}
-                   exit={{ opacity: 0, scale: 0.95 }}
-                   transition={{ duration: 0.3, delay: i * 0.05 }}
-                 >
-                   <Link href={`/listings/${listing.id}`} className={styles.card}>
-                     <div className={styles.cardLeft}>
-                       <div className={`${styles.brandIcon} ${styles[listing.brand]}`}>
-                         {listing.brand[0]}
-                       </div>
-                       <div>
-                         <div className={styles.cardInfo}>
-                           <h3>{listing.brand} Supply • {listing.weight}</h3>
-                         </div>
-                         <div className={styles.cardTags}>
-                           <span className={`badge ${listing.level === 100 ? 'badge-success' : 'badge-warning'}`}>
-                             {listing.condition}
-                           </span>
-                           <span style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
-                             <MapPin size={14} /> {listing.distance} Km Away
-                           </span>
-                         </div>
-                         <div className={styles.levelBarContainer}>
-                           <div className={styles.levelHeader}>
-                             <span>Remaining Volume</span>
-                             <span style={{color: listing.level === 100 ? 'var(--success)' : 'var(--warning)'}}>{listing.level}%</span>
+            {loading ? (
+              <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
+                <Loader2 className="animate-spin" size={32} color="var(--accent-primary)" />
+              </div>
+            ) : (
+              <AnimatePresence>
+                 {filteredListings.map((listing, i) => {
+                   const brandClass = listing.brand.includes('Indane') ? 'Indane' : listing.brand.includes('HP') ? 'HP' : 'Bharat';
+                   return (
+                     <motion.div
+                       key={listing.id}
+                       initial={{ opacity: 0, y: 20 }}
+                       animate={{ opacity: 1, y: 0 }}
+                       exit={{ opacity: 0, scale: 0.95 }}
+                       transition={{ duration: 0.3, delay: i * 0.05 }}
+                     >
+                       <Link href={`/listings/${listing.id}`} className={styles.card}>
+                         <div className={styles.cardLeft}>
+                           <div className={`${styles.brandIcon} ${styles[brandClass]}`}>
+                             {brandClass[0]}
                            </div>
-                           <div className={styles.levelBar}>
-                             <div 
-                               className={styles.levelFill} 
-                               style={{width: `${listing.level}%`, background: listing.level === 100 ? 'var(--success)' : 'var(--warning)'}}
-                             />
+                           <div>
+                             <div className={styles.cardInfo}>
+                               <h3>{listing.brand} Supply • {listing.weight}</h3>
+                             </div>
+                             <div className={styles.cardTags}>
+                               <span className={`badge ${listing.level === 100 ? 'badge-success' : 'badge-warning'}`}>
+                                 {listing.condition}
+                               </span>
+                               <span style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
+                                 <MapPin size={14} /> {listing.distance} Km Away
+                               </span>
+                             </div>
+                             <div className={styles.levelBarContainer}>
+                               <div className={styles.levelHeader}>
+                                 <span>Remaining Volume</span>
+                                 <span style={{color: listing.level === 100 ? 'var(--success)' : 'var(--warning)'}}>{listing.level}%</span>
+                               </div>
+                               <div className={styles.levelBar}>
+                                 <div 
+                                   className={styles.levelFill} 
+                                   style={{width: `${listing.level}%`, background: listing.level === 100 ? 'var(--success)' : 'var(--warning)'}}
+                                 />
+                               </div>
+                             </div>
                            </div>
                          </div>
-                       </div>
-                     </div>
-                     <div className={styles.cardRight}>
-                       <div className={styles.price}>
-                         ₹{listing.price} <span>/ unit</span>
-                       </div>
-                       <div className="btn btn-primary" style={{padding: '0.625rem 1.25rem', borderRadius: '10px'}}>
-                         View Details <ChevronRight size={16} />
-                       </div>
-                     </div>
-                   </Link>
-                 </motion.div>
-               ))}
-               {filteredListings.length === 0 && (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{padding: '4rem', textAlign: 'center', color: 'var(--text-muted)'}}>
-                     No listings found for this brand in your radius.
-                  </motion.div>
-               )}
-            </AnimatePresence>
+                         <div className={styles.cardRight}>
+                           <div className={styles.price}>
+                             ₹{listing.price} <span>/ unit</span>
+                           </div>
+                           <div className="btn btn-primary" style={{padding: '0.625rem 1.25rem', borderRadius: '10px'}}>
+                             View Details <ChevronRight size={16} />
+                           </div>
+                         </div>
+                       </Link>
+                     </motion.div>
+                   );
+                 })}
+                 {filteredListings.length === 0 && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{padding: '4rem', textAlign: 'center', color: 'var(--text-muted)'}}>
+                       No listings found for this brand in your radius.
+                    </motion.div>
+                 )}
+              </AnimatePresence>
+            )}
           </div>
         </div>
 

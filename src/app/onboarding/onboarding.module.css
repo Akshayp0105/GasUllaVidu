@@ -284,17 +284,31 @@
   font-size: 0.75rem;
 }
 
-/* UploadThing default button override */
-.uploadBtn button {
+.uploadBtn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: rgba(59, 130, 246, 0.8) !important;
   color: white !important;
-  border-radius: 8px !important;
-  font-size: 0.85rem !important;
-  padding: 0.5rem 1.25rem !important;
-  cursor: pointer !important;
-  border: none !important;
-  font-weight: 600 !important;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  padding: 0.5rem 1.25rem;
+  cursor: pointer;
+  border: none;
+  font-weight: 600;
   margin-top: 0.5rem;
+}
+
+.uploadBtn:hover {
+  background: rgba(59, 130, 246, 0.92) !important;
+}
+
+.fileInput {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
 }
 
 .uploadingText {

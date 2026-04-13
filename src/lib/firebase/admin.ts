@@ -1,9 +1,11 @@
 import { initializeApp, getApps, cert } from 'firebase-admin/app'
 import { getFirestore } from 'firebase-admin/firestore'
 import { getAuth } from 'firebase-admin/auth'
+import { getStorage } from 'firebase-admin/storage'
 
 const firebaseAdminConfig: any = {
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
 }
 
 if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
@@ -27,3 +29,4 @@ export const adminApp =
 
 export const adminDb = getFirestore(adminApp)
 export const adminAuth = getAuth(adminApp)
+export const adminStorage = getStorage(adminApp)
