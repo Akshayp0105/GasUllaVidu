@@ -1,23 +1,87 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ShieldCheck, MessageSquare, ChevronRight, Activity, Beaker, Scale, ShieldAlert, ArrowRight, MapPin } from 'lucide-react';
+import { useParams, useRouter } from 'next/navigation';
+import { ShieldCheck, MessageSquare, ChevronRight, Activity, Beaker, Scale, ShieldAlert, ArrowRight, MapPin, Loader2, ChevronLeft } from 'lucide-react';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase/client';
 import styles from './page.module.css';
 
+interface Listing {
+  id: string;
+  brand: string;
+  weight: string;
+  condition: string;
+  level: number;
+  levelMethod?: string;
+  price: number;
+  delivery: string;
+  distance: string;
+  userName?: string;
+  userId?: string;
+  description?: string;
+  locationName?: string;
+}
+
 export default function ListingDetail() {
+  const { id } = useParams();
+  const router = useRouter();
+  const [listing, setListing] = useState<Listing | null>(null);
+  const [loading, setLoading] = useState(true);
   const [bidAmount, setBidAmount] = useState('150');
+
+  useEffect(() => {
+    async function fetchListing() {
+      if (!id) return;
+      try {
+        const docRef = doc(db, 'listings', id as string);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setListing({ id: docSnap.id, ...docSnap.data() } as Listing);
+        } else {
+          console.error("No such document!");
+        }
+      } catch (error) {
+        console.error("Error fetching listing:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchListing();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '1rem' }}>
+        <Loader2 className="animate-spin" size={48} color="var(--accent-primary)" />
+        <p style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Loading listing details...</p>
+      </div>
+    );
+  }
+
+  if (!listing) {
+    return (
+      <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '1rem' }}>
+        <h2 style={{ color: 'var(--text-primary)' }}>Listing Not Found</h2>
+        <button className="btn btn-primary" onClick={() => router.push('/listings')}>Back to Inventory</button>
+      </div>
+    );
+  }
+
+  const brandName = listing.brand.toUpperCase();
+  const brandClass = listing.brand.includes('Indane') ? 'Indane' : listing.brand.includes('HP') ? 'HP' : 'Bharat';
 
   return (
     <main className="container">
       <div className={styles.pageHeader}>
-        <span style={{color: '#0f172a', fontWeight: 600}}>GasUllaVidu</span>
+        <button onClick={() => router.back()} style={{ border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', padding: 0 }}>
+           <ChevronLeft size={16} /> Back
+        </button>
         <ChevronRight size={14} />
-        <span>Home</span>
+        <Link href="/listings">Inventory</Link>
         <ChevronRight size={14} />
-        <Link href="/listings">Browse</Link>
-        <ChevronRight size={14} />
-        <span style={{color: 'var(--accent-primary)', fontWeight: 600}}>My Listings</span>
+        <span style={{color: 'var(--accent-primary)', fontWeight: 600}}>{brandName}</span>
       </div>
 
       <div className={styles.layout}>
@@ -32,11 +96,11 @@ export default function ListingDetail() {
           <div className={styles.titleArea}>
             <div>
               <div style={{color: 'var(--text-muted)', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', letterSpacing: '1px'}}>
-                INDANE • 14.2KG CYLINDER
+                {brandName} • {listing.weight} CYLINDER
               </div>
-              <h1 className={styles.title}>Half-Full Backup<br />Cylinder</h1>
+              <h1 className={styles.title}>{listing.condition} Cylinder<br />for Sharing</h1>
               <p className={styles.subtitle}>
-                Owned for 6 months. Well maintained, kept indoors. Perfect for emergency backup during weekend shortages.
+                {listing.description || `This ${brandName} cylinder is available for immediate pick-up. Handled with care and verified by the community.`}
               </p>
             </div>
             <div style={{background: 'rgba(15, 76, 218, 0.1)', padding: '1rem', borderRadius: '12px', color: 'var(--accent-primary)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.75rem'}}>
@@ -50,23 +114,23 @@ export default function ListingDetail() {
              <div className={styles.estGrid}>
                 <div className={styles.estCard}>
                   <Beaker color="var(--accent-primary)" size={28} />
-                  <div className={styles.estValue}>45%</div>
-                  <div className={styles.estLabel}>Water Test</div>
-                  <div style={{fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem'}}>Condensation line computed.</div>
+                  <div className={styles.estValue}>{listing.level}%</div>
+                  <div className={styles.estLabel}>Level Status</div>
+                  <div style={{fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem'}}>Reported by owner during listing.</div>
                 </div>
                 
                 <div className={styles.estCard}>
                   <Scale color="var(--success)" size={28} />
-                  <div className={styles.estValue} style={{color: 'var(--success)'}}>22.4<span style={{fontSize: '1rem'}}>kg</span></div>
-                  <div className={styles.estLabel}>Weight Check</div>
-                  <div style={{fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem'}}>Tare 15.3kg + Gas 7.1kg</div>
+                  <div className={styles.estValue} style={{color: 'var(--success)'}}>{listing.weight}</div>
+                  <div className={styles.estLabel}>Cylinder Size</div>
+                  <div style={{fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem'}}>Standard domestic/commercial size.</div>
                 </div>
 
                 <div className={styles.estCard}>
                   <Activity color="var(--warning)" size={28} />
-                  <div className={styles.estValue} style={{color: 'var(--warning)'}}>|||</div>
-                  <div className={styles.estLabel}>Sound Echo</div>
-                  <div style={{fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem'}}>Low flag tone on resonance.</div>
+                  <div className={styles.estValue} style={{color: 'var(--warning)'}}>{listing.condition === 'Factory Sealed' ? 'SEALED' : 'OPEN'}</div>
+                  <div className={styles.estLabel}>Seal Status</div>
+                  <div style={{fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem'}}>Physical verification recommended.</div>
                 </div>
              </div>
           </div>
@@ -76,16 +140,16 @@ export default function ListingDetail() {
                 <div className={styles.secTitle}>Pricing & Terms</div>
                 <div>
                    <div className={styles.tableRow}>
-                      <span style={{color: 'var(--text-secondary)'}}>Usage Fee (per day)</span>
-                      <span style={{fontWeight: 600}}>₹150</span>
+                      <span style={{color: 'var(--text-secondary)'}}>Unit Price</span>
+                      <span style={{fontWeight: 600}}>₹{listing.price}</span>
                    </div>
                    <div className={styles.tableRow}>
-                      <span style={{color: 'var(--text-secondary)'}}>Refundable Deposit</span>
-                      <span style={{fontWeight: 600}}>₹1,500</span>
+                      <span style={{color: 'var(--text-secondary)'}}>Delivery Mode</span>
+                      <span style={{fontWeight: 600}}>{listing.delivery}</span>
                    </div>
                    <div className={styles.tableRow} style={{border: 'none', paddingBottom: 0}}>
-                      <span style={{color: 'var(--text-secondary)'}}>Gas Cost (estimated)</span>
-                      <span style={{fontWeight: 600}}>₹450</span>
+                      <span style={{color: 'var(--text-secondary)'}}>Community Trust Factor</span>
+                      <span style={{fontWeight: 600}}>High</span>
                    </div>
                 </div>
              </div>
@@ -96,8 +160,8 @@ export default function ListingDetail() {
                    <div style={{display: 'flex', gap: '1rem', marginBottom: '1.5rem'}}>
                       <div style={{background: 'black', color: 'white', padding: '0.5rem', borderRadius: '50%'}}><MapPin size={20} /></div>
                       <div>
-                        <div style={{fontWeight: 600}}>HSR Layout, Sector 2</div>
-                        <div style={{fontSize: '0.85rem', color: 'var(--text-secondary)'}}>Available for pickup after 5 PM</div>
+                        <div style={{fontWeight: 600}}>{listing.locationName || 'Chennai South, TN'}</div>
+                        <div style={{fontSize: '0.85rem', color: 'var(--text-secondary)'}}>{listing.distance} Km from your area</div>
                       </div>
                    </div>
                    <div style={{background: 'rgba(249, 115, 22, 0.1)', border: '1px solid rgba(249, 115, 22, 0.3)', padding: '1rem', borderRadius: '8px', color: '#c2410c'}}>
@@ -116,8 +180,8 @@ export default function ListingDetail() {
         <div className={styles.rightCol}>
            
            <div className={styles.bidCard}>
-              <h3 className={styles.bidHeader}>Live Bidding</h3>
-              <p style={{color: 'var(--text-secondary)', fontSize: '0.9rem'}}>Current bids from local neighbors</p>
+              <h3 className={styles.bidHeader}>Community Bidding</h3>
+              <p style={{color: 'var(--text-secondary)', fontSize: '0.9rem'}}>Current interest from neighbors</p>
 
               <div className={styles.biddersList}>
                  <div className={`${styles.bidder} ${styles.top}`}>
@@ -125,30 +189,30 @@ export default function ListingDetail() {
                        <div style={{width: 30, height: 30, background: 'var(--accent-primary)', color: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem'}}>R</div>
                        Rahul V.
                     </div>
-                    <div>₹180</div>
+                    <div>₹{listing.price + 50}</div>
                  </div>
                  <div className={styles.bidder}>
                     <div style={{display: 'flex', alignItems: 'center', gap: '0.75rem'}}>
                        <div style={{width: 30, height: 30, background: '#cbd5e1', color: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem'}}>S</div>
                        Savita M.
                     </div>
-                    <div>₹150</div>
+                    <div>₹{listing.price}</div>
                  </div>
               </div>
 
               <div className={styles.bidInputGroup}>
-                 <div style={{fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px'}}>Your Agency Bid</div>
+                 <div style={{fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px'}}>Request Offer</div>
                  <div style={{position: 'relative'}}>
                    <span style={{position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', fontWeight: 600, color: 'var(--text-secondary)'}}>₹</span>
                    <input type="number" className={styles.bidInput} value={bidAmount} onChange={e => setBidAmount(e.target.value)} style={{paddingLeft: '2rem'}} />
                  </div>
               </div>
 
-              <button className="btn btn-primary" style={{width: '100%', padding: '1rem', fontSize: '1rem', marginBottom: '1rem'}}>
-                 Place a Bid
+              <button className="btn btn-primary" style={{width: '100%', padding: '1rem', fontSize: '1rem', marginBottom: '1rem'}} onClick={() => alert("Interest recorded. Owner will be notified.")}>
+                 Submit Offer
               </button>
               
-              <button className="btn btn-secondary" style={{width: '100%', padding: '1rem', fontSize: '1rem'}}>
+              <button className="btn btn-secondary" style={{width: '100%', padding: '1rem', fontSize: '1rem'}} onClick={() => alert("Chat initialized.")}>
                  <MessageSquare size={18} /> Chat with Owner
               </button>
 
@@ -159,12 +223,12 @@ export default function ListingDetail() {
 
            <div className={styles.userCard}>
               <div className={styles.avatar}>
-                <span>K</span>
+                <span>{listing.userName?.[0] || 'A'}</span>
               </div>
               <div>
-                 <div style={{fontWeight: 600}}>Karthik S.</div>
+                 <div style={{fontWeight: 600}}>{listing.userName || 'Anonymous Owner'}</div>
                  <div style={{display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: '2px'}}>
-                    ⭐ 4.9 (12 shares)
+                    ⭐ 4.9 (Trusted Sharer)
                  </div>
               </div>
            </div>

@@ -1,10 +1,10 @@
+import path from 'node:path'
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ['@prisma/client', '@auth/prisma-adapter', 'bcryptjs', 'prisma'],
   turbopack: {
-    // @ts-ignore
-    root: '.',
+    root: path.resolve(__dirname),
   },
   images: {
     remotePatterns: [

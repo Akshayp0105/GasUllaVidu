@@ -10,6 +10,24 @@ import {
 import { firebaseProjectId } from '@/lib/firebase/config'
 import { adminDb } from '@/lib/firebase/admin'
 
+type StoredUser = {
+  firebaseUid?: string
+  email?: string | null
+  name?: string | null
+  image?: string | null
+  profileComplete?: boolean
+  createdAt?: string
+  phone?: string | null
+  address?: string | null
+  idProofType?: string | null
+  idProofNumber?: string | null
+  idProofDocUrl?: string | null
+}
+
+type StoredUserWithId = StoredUser & {
+  id: string
+}
+
 const FIREBASE_CERTS_URL =
   'https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com'
 
@@ -111,7 +129,7 @@ async function findUserByFirebaseIdentity(uid: string, email?: string) {
   
   if (!snapshot.empty) {
     const doc = snapshot.docs[0]
-    return { id: doc.id, ...doc.data() } as any
+    return { id: doc.id, ...(doc.data() as StoredUser) } satisfies StoredUserWithId
   }
 
   if (email) {
@@ -119,7 +137,7 @@ async function findUserByFirebaseIdentity(uid: string, email?: string) {
     const emailSnapshot = await emailRef.get()
     if (!emailSnapshot.empty) {
       const doc = emailSnapshot.docs[0]
-      return { id: doc.id, ...doc.data() } as any
+      return { id: doc.id, ...(doc.data() as StoredUser) } satisfies StoredUserWithId
     }
   }
 
@@ -200,7 +218,7 @@ export async function getCurrentUser() {
     const doc = await adminDb.collection('users').doc(userId).get()
     if (!doc.exists) return null
 
-    return { id: doc.id, ...doc.data() } as any
+    return { id: doc.id, ...(doc.data() as StoredUser) } satisfies StoredUserWithId
   } catch {
     return null
   }

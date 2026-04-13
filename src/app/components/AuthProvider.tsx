@@ -46,7 +46,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
       // but we shouldn't block the UI unnecessarily if it's already logged in.
       // However, to prevent race conditions during redirect, we sync once if needed.
       try {
-        const idToken = await nextUser.getIdToken()
+        await nextUser.getIdToken()
         // verify session via GET /api/auth/session or just set user
         // For simplicity and speed, we set the user first
         setUser(nextUser)

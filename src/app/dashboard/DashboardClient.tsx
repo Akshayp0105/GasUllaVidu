@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import {
   LayoutDashboard, Search, Flame, MessageSquare, User, ShieldCheck,
   LogOut, Plus, CreditCard, Phone, MapPin, FileText, Star, 
   CheckCircle2, TrendingUp, Bell, Settings, ChevronRight, 
-  Activity, ExternalLink, Menu, X
+  Activity, ExternalLink, Menu, X, type LucideIcon
 } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/app/components/AuthProvider'
@@ -35,7 +35,7 @@ export type DBUser = {
 
 type ActiveSection = 'overview' | 'listings' | 'chats' | 'profile' | 'settings';
 
-const navItems: { id: ActiveSection; label: string; icon: any }[] = [
+const navItems: { id: ActiveSection; label: string; icon: LucideIcon }[] = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'listings', label: 'My Listings', icon: Flame },
   { id: 'chats', label: 'Messages', icon: MessageSquare },
@@ -43,7 +43,7 @@ const navItems: { id: ActiveSection; label: string; icon: any }[] = [
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
-const fadeUp: any = {
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 16 },
   show: (i: number) => ({
     opacity: 1, y: 0,
@@ -177,7 +177,7 @@ export default function DashboardClient({ user }: { user: DBUser }) {
                 <motion.div custom={0} variants={fadeUp} initial="hidden" animate="show" className={styles.welcomeRow}>
                   <div>
                     <h1 className={styles.pageTitle}>Welcome back, {firstName}</h1>
-                    <p className={styles.pageSubtitle}>Here's what's happening in your local LPG network today.</p>
+                    <p className={styles.pageSubtitle}>Here is what is happening in your local LPG network today.</p>
                   </div>
                   <Link href="/listings/new" className={styles.ctaBtn}>
                     <Plus size={18} /> Post Listing

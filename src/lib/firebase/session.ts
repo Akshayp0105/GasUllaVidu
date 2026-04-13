@@ -3,10 +3,6 @@ type SessionProfile = {
   image?: string | null
 }
 
-async function wait(ms: number) {
-  await new Promise((resolve) => setTimeout(resolve, ms))
-}
-
 export async function syncFirebaseSession(idToken: string, profile?: SessionProfile) {
   let lastError: Error | null = null
 

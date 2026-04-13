@@ -24,6 +24,20 @@ function getUploadErrorMessage(message: string) {
   return `Upload failed: ${message}`
 }
 
+async function parseApiResponse(res: Response) {
+  const bodyText = await res.text()
+
+  if (!bodyText.trim()) {
+    return null
+  }
+
+  try {
+    return JSON.parse(bodyText) as Record<string, unknown>
+  } catch {
+    throw new Error(`Server returned an invalid response (${res.status}).`)
+  }
+}
+
 export default function OnboardingPage() {
   const router = useRouter()
   const { user, loading: authLoading } = useAuth()
@@ -87,9 +101,13 @@ export default function OnboardingPage() {
         body: formData,
       })
 
-      const data = await res.json()
+      const data = await parseApiResponse(res)
       if (!res.ok) {
-        throw new Error(data.error || 'Upload request failed.')
+        throw new Error(typeof data?.error === 'string' ? data.error : `Upload request failed (${res.status}).`)
+      }
+
+      if (typeof data?.url !== 'string') {
+        throw new Error('Upload succeeded but no file URL was returned.')
       }
 
       setUploadedUrl(data.url)
