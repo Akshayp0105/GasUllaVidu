@@ -196,6 +196,68 @@
   flex-direction: column;
 }
 
+.dashboardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 4rem 0;
+}
+
+.backBtn,
+.headerLogout,
+.headerLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 42px;
+  padding: 0.65rem 1rem;
+  border-radius: 999px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.backBtn {
+  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.backBtn:hover {
+  background: var(--bg-tertiary);
+}
+
+.headerLinks {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.headerLink {
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+}
+
+.headerLink:hover {
+  color: var(--text-primary);
+  background: rgba(0,0,0,0.04);
+}
+
+.headerLogout {
+  border: none;
+  background: rgba(225, 29, 72, 0.1);
+  color: var(--accent-secondary);
+  cursor: pointer;
+}
+
+.headerLogout:hover {
+  background: rgba(225, 29, 72, 0.15);
+}
+
 .topBar {
   display: none; /* Hide top bar on desktop since we have main Navbar */
 }
@@ -620,10 +682,23 @@
 @media (max-width: 1024px) {
   .statsGrid { grid-template-columns: repeat(2, 1fr); }
   .content { padding: 2rem; }
+  .dashboardHeader { padding: 1.25rem 2rem 0; }
 }
 
 @media (max-width: 768px) {
   .main { margin-left: 0; }
+  .dashboardHeader {
+    padding: 1rem 1.5rem 0;
+    flex-wrap: wrap;
+  }
+
+  .headerLinks {
+    order: 3;
+    width: 100%;
+    justify-content: flex-start;
+    overflow-x: auto;
+  }
+
   .topBar {
     display: flex;
     align-items: center;

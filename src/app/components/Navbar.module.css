@@ -86,6 +86,12 @@
   flex-shrink: 0;
 }
 
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
 .spin {
   animation: spin 1s linear infinite;
   color: var(--text-muted);

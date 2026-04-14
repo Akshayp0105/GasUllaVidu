@@ -5,10 +5,11 @@ import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import {
   LayoutDashboard, Search, Flame, MessageSquare, User, ShieldCheck,
   LogOut, Plus, CreditCard, Phone, MapPin, FileText, Star, 
-  CheckCircle2, TrendingUp, Bell, Settings, ChevronRight, 
+  CheckCircle2, TrendingUp, Bell, Settings, ChevronLeft, ChevronRight, 
   Activity, ExternalLink, Menu, X, type LucideIcon
 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/components/AuthProvider'
 import styles from './dashboard.module.css';
 
@@ -54,7 +55,9 @@ const fadeUp: Variants = {
 export default function DashboardClient({ user }: { user: DBUser }) {
   const [active, setActive] = useState<ActiveSection>('overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
   const { signOut } = useAuth()
+  const router = useRouter();
 
   const memberSince = user.createdAt
     ? new Date(user.createdAt).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })
@@ -62,6 +65,29 @@ export default function DashboardClient({ user }: { user: DBUser }) {
 
   const firstName = user.name?.split(' ')[0] || 'User';
   const initials = (user.name || 'U').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      router.back();
+      return;
+    }
+
+    router.push('/listings');
+  };
+
+  const handleSignOut = async () => {
+    if (signingOut) return;
+
+    try {
+      setSigningOut(true);
+      await signOut();
+      router.replace('/auth/signin');
+      router.refresh();
+    } catch (error) {
+      console.error('Failed to sign out:', error);
+      setSigningOut(false);
+    }
+  };
 
   return (
     <div className={styles.shell}>
@@ -132,9 +158,9 @@ export default function DashboardClient({ user }: { user: DBUser }) {
           Post Listing
         </Link>
 
-        <button className={styles.signOutBtn} onClick={() => void signOut()}>
+        <button className={styles.signOutBtn} onClick={() => void handleSignOut()} disabled={signingOut}>
           <LogOut size={16} />
-          Sign Out
+          {signingOut ? 'Signing Out...' : 'Sign Out'}
         </button>
 
         <div className={styles.memberBadge}>Member since {memberSince}</div>
@@ -142,6 +168,26 @@ export default function DashboardClient({ user }: { user: DBUser }) {
 
       {/* Main */}
       <div className={styles.main}>
+        <div className={styles.dashboardHeader}>
+          <button type="button" className={styles.backBtn} onClick={handleBack}>
+            <ChevronLeft size={18} />
+            Back
+          </button>
+          <div className={styles.headerLinks}>
+            <Link href="/" className={styles.headerLink}>Home</Link>
+            <Link href="/listings" className={styles.headerLink}>Browse Listings</Link>
+          </div>
+          <button
+            type="button"
+            className={styles.headerLogout}
+            onClick={() => void handleSignOut()}
+            disabled={signingOut}
+          >
+            <LogOut size={16} />
+            {signingOut ? 'Signing out...' : 'Logout'}
+          </button>
+        </div>
+
         {/* Top Bar for Mobile */}
         <header className={styles.topBar}>
           <button className={styles.menuBtn} onClick={() => setSidebarOpen(true)}>
@@ -364,8 +410,8 @@ export default function DashboardClient({ user }: { user: DBUser }) {
                       <div className={styles.settingLabel}>Terminate Session</div>
                       <div className={styles.settingSub}>Securely logout of this device locally</div>
                     </div>
-                    <button className={styles.settingDangerBtn} onClick={() => void signOut()}>
-                      Sign Out
+                    <button className={styles.settingDangerBtn} onClick={() => void handleSignOut()} disabled={signingOut}>
+                      {signingOut ? 'Signing Out...' : 'Sign Out'}
                     </button>
                   </div>
                 </div>

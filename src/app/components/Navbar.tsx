@@ -1,9 +1,10 @@
 "use client";
 
 import Link from 'next/link';
-import { Flame, LayoutDashboard, LogIn, Loader2, Menu } from 'lucide-react';
+import { Flame, LayoutDashboard, LogIn, Loader2, LogOut, Menu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/app/components/AuthProvider'
 import styles from './Navbar.module.css';
 
@@ -11,12 +12,37 @@ export default function Navbar() {
   const { user, loading, signOut } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 10);
     window.addEventListener('scroll', handler);
     return () => window.removeEventListener('scroll', handler);
   }, []);
+
+  const handleSignOut = async () => {
+    if (signingOut) return;
+
+    try {
+      setSigningOut(true);
+      await signOut();
+      setMobileOpen(false);
+
+      if (pathname?.startsWith('/dashboard')) {
+        router.replace('/auth/signin');
+      } else {
+        router.push('/auth/signin');
+      }
+
+      router.refresh();
+    } catch (error) {
+      console.error('Failed to sign out:', error);
+    } finally {
+      setSigningOut(false);
+    }
+  };
 
   return (
     <motion.nav
@@ -49,11 +75,21 @@ export default function Navbar() {
           ) : user ? (
             <>
               <Link href="/dashboard" className="btn btn-ghost" style={{ padding: '0.5rem 1rem' }}>
-                <LayoutDashboard size={16} /> Profile
+                <LayoutDashboard size={16} /> Dashboard
               </Link>
               <Link href="/listings/new" className="btn btn-primary" style={{ padding: '0.6rem 1.2rem' }}>
                  Share Cylinder
               </Link>
+              <button
+                type="button"
+                className={`${styles.actionBtn} btn btn-ghost`}
+                style={{ padding: '0.5rem 1rem' }}
+                onClick={() => void handleSignOut()}
+                disabled={signingOut}
+              >
+                {signingOut ? <Loader2 size={16} className={styles.spin} /> : <LogOut size={16} />}
+                Logout
+              </button>
             </>
           ) : (
             <>
@@ -93,10 +129,14 @@ export default function Navbar() {
             {user ? (
               <>
                 <Link href="/dashboard" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>
-                  Profile & Dashboard
+                  Dashboard
                 </Link>
-                <button className={`${styles.mobileLink} ${styles.mobileDanger}`} onClick={async () => { await signOut(); setMobileOpen(false); }}>
-                  Sign Out
+                <button
+                  className={`${styles.mobileLink} ${styles.mobileDanger}`}
+                  onClick={() => void handleSignOut()}
+                  disabled={signingOut}
+                >
+                  {signingOut ? 'Signing out...' : 'Sign Out'}
                 </button>
               </>
             ) : (
