@@ -176,6 +176,7 @@
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  padding-bottom: 2rem;
 }
 
 .card {
@@ -231,6 +232,7 @@
 
 .cardTags {
   display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
   align-items: center;
   font-size: 0.875rem;
@@ -294,8 +296,13 @@
   background: var(--bg-secondary);
   position: relative;
   height: calc(100vh - 72px);
-  position: sticky;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem;
   top: 72px;
+  position: sticky;
+  overflow: hidden;
 }
 
 .mapImage {
@@ -307,9 +314,6 @@
 }
 
 .mapOverlay {
-  position: absolute;
-  top: 1.5rem;
-  right: 1.5rem;
   background: rgba(15, 23, 42, 0.8);
   backdrop-filter: blur(12px);
   padding: 0.75rem 1.25rem;
@@ -322,4 +326,298 @@
   align-items: center;
   gap: 0.75rem;
   color: #fff;
+  align-self: flex-end;
+  z-index: 2;
+}
+
+.spinIcon {
+  animation: spin 1s linear infinite;
+}
+
+.loaderWrap,
+.emptyState {
+  display: flex;
+  justify-content: center;
+  padding: 4rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.locationText,
+.distanceText {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.mapOverlayStat {
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  padding-left: 0.75rem;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.radarDot {
+  width: 8px;
+  height: 8px;
+  background: var(--success);
+  border-radius: 50%;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.9);
+}
+
+.mapSummary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.mapSummary > div {
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.72), rgba(15, 23, 42, 0.94));
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 20px;
+  padding: 1.25rem;
+  color: #fff;
+}
+
+.mapSummaryLabel {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.56);
+  margin-bottom: 0.5rem;
+}
+
+.mapSummaryValue {
+  font-size: 2rem;
+  font-weight: 800;
+  font-family: var(--font-display);
+}
+
+.mapSummaryValueSmall {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.mapStage {
+  position: relative;
+  flex: 1;
+  min-height: 420px;
+  border-radius: 28px;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  background:
+    radial-gradient(circle at top, rgba(59, 130, 246, 0.16), transparent 42%),
+    linear-gradient(180deg, #07111f 0%, #0f172a 48%, #08101d 100%);
+}
+
+.mapGlow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 18%, rgba(236, 72, 153, 0.13), transparent 28%),
+    radial-gradient(circle at 82% 22%, rgba(59, 130, 246, 0.18), transparent 30%),
+    radial-gradient(circle at 50% 80%, rgba(16, 185, 129, 0.14), transparent 30%);
+  pointer-events: none;
+}
+
+.mapGrid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.1) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.88), transparent 100%);
+}
+
+.heatSpot,
+.viewerMarker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+}
+
+.heatHalo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(86px + (44px * var(--intensity)));
+  height: calc(86px + (44px * var(--intensity)));
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  opacity: 0.4;
+  filter: blur(16px);
+  background: currentColor;
+}
+
+.heatDot {
+  position: relative;
+  z-index: 2;
+  width: calc(12px + (8px * var(--intensity)));
+  height: calc(12px + (8px * var(--intensity)));
+  border-radius: 999px;
+  background: #fff;
+  border: 3px solid currentColor;
+  box-shadow: 0 0 18px currentColor;
+}
+
+.heatLabel {
+  position: absolute;
+  left: 18px;
+  top: 14px;
+  min-width: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #fff;
+  box-shadow: 0 12px 28px rgba(2, 6, 23, 0.35);
+}
+
+.heatLabel strong {
+  font-size: 0.82rem;
+  line-height: 1.2;
+}
+
+.heatLabel span {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.viewerPulse {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 48px;
+  height: 48px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 1px solid rgba(125, 211, 252, 0.6);
+  animation: pulse 1.8s ease-out infinite;
+}
+
+.viewerDot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #7dd3fc;
+  border: 3px solid #eff6ff;
+  box-shadow: 0 0 18px rgba(125, 211, 252, 0.9);
+}
+
+.viewerMarker span {
+  position: absolute;
+  top: 18px;
+  left: 16px;
+  color: #e0f2fe;
+  font-weight: 700;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.mapEmpty {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: rgba(255, 255, 255, 0.82);
+  max-width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.mapEmpty span {
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 0.9rem;
+}
+
+.mapFooter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0.85; }
+  100% { transform: translate(-50%, -50%) scale(1.8); opacity: 0; }
+}
+
+@media (max-width: 1200px) {
+  .pageContainer {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .mainLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .mapArea {
+    height: auto;
+    min-height: 640px;
+    border-left: none;
+    border-top: 1px solid var(--border-color);
+    position: relative;
+    top: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .contentArea {
+    padding: 2rem 1rem;
+    height: auto;
+  }
+
+  .pageHeader {
+    flex-direction: column;
+    align-items: stretch;
+    margin-bottom: 2rem;
+  }
+
+  .filters {
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+  }
+
+  .card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+
+  .cardLeft,
+  .cardRight {
+    width: 100%;
+  }
+
+  .cardRight {
+    align-items: flex-start;
+  }
+
+  .levelBarContainer {
+    width: 100%;
+  }
+
+  .mapStage {
+    min-height: 360px;
+  }
+
+  .heatLabel {
+    min-width: 96px;
+    left: 14px;
+    top: 12px;
+    padding: 0.55rem 0.7rem;
+  }
 }

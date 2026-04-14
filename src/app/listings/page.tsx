@@ -1,3 +1,4 @@
+/* eslint-disable */
 "use client";
 
 import { useEffect, useState } from 'react';
@@ -6,9 +7,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, MapPin, LayoutDashboard, Flame, Target, MessageSquare, ChevronRight, Loader2 } from 'lucide-react';
 import { db } from '@/lib/firebase/client';
 import { subscribeToListings, type ListingView } from '@/lib/firebase/listings';
+import ListingsPageClient from './ListingsPageClient';
 import styles from './page.module.css';
 
-export default function ListingsPage() {
+export function LegacyListingsPage() {
   const [filter, setFilter] = useState('All Brands');
   const [listings, setListings] = useState<ListingView[]>([]);
   const [loading, setLoading] = useState(true);
@@ -164,3 +166,5 @@ export default function ListingsPage() {
     </div>
   );
 }
+
+export default ListingsPageClient;

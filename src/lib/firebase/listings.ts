@@ -19,6 +19,9 @@ export type ListingRecord = {
   price?: number
   delivery?: string
   distance?: string | number
+  locationName?: string
+  latitude?: number
+  longitude?: number
   userId?: string
   userName?: string
   createdAt?: unknown
@@ -34,6 +37,9 @@ export type ListingView = {
   price: number
   delivery: string
   distance: string
+  locationName: string
+  latitude: number | null
+  longitude: number | null
 }
 
 type CreateListingInput = {
@@ -41,6 +47,9 @@ type CreateListingInput = {
   weight: string
   condition: string
   level: number
+  locationName: string
+  latitude: number
+  longitude: number
   userId: string
   userName: string
 }
@@ -71,12 +80,41 @@ function getDefaultDistance(distance?: string | number) {
   return '0.0'
 }
 
+function getValidCoordinate(value?: number) {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null
+}
+
+export function calculateDistanceKm(
+  origin: { latitude: number; longitude: number },
+  destination: { latitude: number; longitude: number },
+) {
+  const earthRadiusKm = 6371
+  const dLat = toRadians(destination.latitude - origin.latitude)
+  const dLon = toRadians(destination.longitude - origin.longitude)
+  const startLat = toRadians(origin.latitude)
+  const endLat = toRadians(destination.latitude)
+
+  const haversine =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(startLat) * Math.cos(endLat) * Math.sin(dLon / 2) * Math.sin(dLon / 2)
+
+  const angularDistance = 2 * Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine))
+
+  return earthRadiusKm * angularDistance
+}
+
+function toRadians(value: number) {
+  return (value * Math.PI) / 180
+}
+
 export function mapListingDoc(
   doc: QueryDocumentSnapshot<ListingRecord>,
 ): ListingView {
   const data = doc.data()
   const level = typeof data.level === 'number' ? Math.max(0, Math.min(100, data.level)) : 0
   const condition = data.condition?.trim() || 'Used'
+  const latitude = getValidCoordinate(data.latitude)
+  const longitude = getValidCoordinate(data.longitude)
 
   return {
     id: doc.id,
@@ -88,6 +126,9 @@ export function mapListingDoc(
     price: typeof data.price === 'number' ? data.price : getDefaultPrice(data.brand || ''),
     delivery: data.delivery?.trim() || 'Pickup Only',
     distance: getDefaultDistance(data.distance),
+    locationName: data.locationName?.trim() || 'Location unavailable',
+    latitude,
+    longitude,
   }
 }
 
@@ -121,6 +162,9 @@ export async function createListing(db: Firestore, input: CreateListingInput) {
     price: getDefaultPrice(input.brand),
     delivery: 'Pickup Only',
     distance: '0.0',
+    locationName: input.locationName.trim(),
+    latitude: input.latitude,
+    longitude: input.longitude,
     userId: input.userId,
     userName: input.userName,
     createdAt: serverTimestamp(),
