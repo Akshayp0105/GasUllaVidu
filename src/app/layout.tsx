@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import ConditionalNavbar from './components/ConditionalNavbar'
-import AiAssistant from './components/AiAssistant'
+import AdvancedAiAssistant from './components/AdvancedAiAssistant'
 import Providers from './components/Providers'
 
 export const metadata: Metadata = {
@@ -20,7 +20,7 @@ export default function RootLayout({
         <Providers>
           <ConditionalNavbar />
           <main>{children}</main>
-          <AiAssistant />
+          <AdvancedAiAssistant />
         </Providers>
       </body>
     </html>
