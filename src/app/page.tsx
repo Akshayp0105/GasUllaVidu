@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { 
   ShieldCheck, MapPin, Search, Zap, Handshake, 
-  BarChart3, Plus, ArrowRight, Flame
+  BarChart3, Plus, ArrowRight, Flame, Users, CheckCircle, Clock
 } from 'lucide-react';
 import styles from './page.module.css';
 import { useRef } from 'react';
@@ -116,6 +116,35 @@ export default function Home() {
             </div>
          </motion.div>
       </motion.section>
+
+      {/* Live Stats Bar */}
+      <section className={styles.statsSection}>
+        <div className={styles.statsContainer}>
+          {[
+            { icon: Users, label: 'Verified Neighbors', value: '1,240+' },
+            { icon: CheckCircle, label: 'Successful Shares', value: '850+' },
+            { icon: Clock, label: 'Avg. Match Time', value: '12 min' },
+            { icon: ShieldCheck, label: 'Safety Rating', value: '4.9/5' }
+          ].map((stat, i) => (
+            <motion.div 
+              key={stat.label}
+              className={styles.statItem}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1, duration: 0.5 }}
+            >
+              <div className={styles.statIconWrap}>
+                 <stat.icon size={20} />
+              </div>
+              <div className={styles.statContent}>
+                <span className={styles.statValue}>{stat.value}</span>
+                <span className={styles.statLabel}>{stat.label}</span>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
 
       {/* Feature Grid */}
       <section className={styles.featuresSection}>

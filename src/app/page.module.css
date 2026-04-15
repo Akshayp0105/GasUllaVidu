@@ -188,6 +188,59 @@
   box-shadow: 0 20px 40px rgba(0,0,0,0.4);
 }
 
+/* Stats Section */
+.statsSection {
+  padding: 3rem 2rem;
+  background: #f8fafc;
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.statsContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rem;
+}
+
+.statItem {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.statIconWrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(225, 29, 72, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-secondary);
+  flex-shrink: 0;
+}
+
+.statContent {
+  display: flex;
+  flex-direction: column;
+}
+
+.statValue {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.statLabel {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
 /* Features Section */
 .featuresSection {
   padding: 8rem 2rem;
@@ -287,6 +340,7 @@
 
 @media (max-width: 1024px) {
   .featureGrid { grid-template-columns: repeat(2, 1fr); }
+  .statsContainer { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
   .interactivePreview { height: 500px; }
 }
 
@@ -296,6 +350,7 @@
   .heroActionsRow { flex-direction: column; background: transparent; border: none; box-shadow: none; width: 100%; gap: 1rem; }
   .heroBtn { width: 100%; justify-content: center; }
   .featureGrid { grid-template-columns: 1fr; }
+  .statsContainer { grid-template-columns: 1fr; }
   .interactivePreview { height: 400px; display: none; /* hide complex visual on small mobile to unclutter */ }
   .ctaTitle { font-size: 2.5rem; }
 }
