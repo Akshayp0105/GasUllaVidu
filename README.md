@@ -28,27 +28,32 @@ Deployment platform (Vercel )
 
 📂 Project Structure
 GasUllaVidu/
-│── client/        # Frontend code
-│── server/        # Backend code
+│── src/           # Frontend (Next.js)
+│── backend/       # Backend (FastAPI)
 │── public/        # Static assets
-│── src/           # Main source files
 │── package.json
 │── README.md
 
 ⚙️ Installation & Setup
+
 1. Clone the repository
-  ```
+   ```bash
    git clone https://github.com/Akshayp0105/GasUllaVidu.git
    cd GasUllaVidu
-```
-
-2. Install dependencies
-```   
-npm install
-```
-3. Run the project
    ```
-   npm start
+
+2. Frontend Setup
+   ```bash
+   npm install
+   npm run dev
+   ```
+
+3. Backend Setup
+   ```bash
+   cd backend
+   pip install -r requirements.txt
+   # Setup .env from .env.example
+   uvicorn app.main:app --reload
    ```
 
 4. Build for production
