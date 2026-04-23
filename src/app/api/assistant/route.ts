@@ -21,6 +21,8 @@ function buildOpenAIMessages(messages: AssistantMessage[]) {
   ];
 }
 
+const ASSISTANT_BACKEND_URL = process.env.ASSISTANT_BACKEND_URL;
+
 export async function POST(request: Request) {
   let body: { messages?: AssistantMessage[]; stream?: boolean };
 
@@ -37,6 +39,39 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'A user message is required.' }, { status: 400 });
   }
 
+  // If external backend is configured, proxy the request
+  if (ASSISTANT_BACKEND_URL) {
+    try {
+      const response = await fetch(ASSISTANT_BACKEND_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        throw new Error(`External backend error: ${response.status}`);
+      }
+
+      // If streaming is requested, forward the stream
+      if (body.stream && response.body) {
+        return new Response(response.body, {
+          headers: {
+            'Content-Type': 'text/event-stream; charset=utf-8',
+            'Cache-Control': 'no-cache, no-transform',
+            Connection: 'keep-alive',
+          },
+        });
+      }
+
+      const data = await response.json();
+      return NextResponse.json(data);
+    } catch (err) {
+      console.error('[Assistant] Proxy error:', err);
+      // Fall through to local fallback if proxy fails
+    }
+  }
+
+  // Local Fallback Logic (if no backend or proxy fails)
   const fallbackReply = buildFallbackReply(latestUser.content);
 
   if (!OPENAI_API_KEY) {
@@ -160,7 +195,7 @@ export async function POST(request: Request) {
     });
   }
 
-  // Non-streaming
+  // Non-streaming local fallback
   try {
     const res = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
