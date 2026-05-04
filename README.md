@@ -24,7 +24,7 @@ Firebase Firestore
 Tools & Services
 Git & GitHub
 API integrations (Firebase api,map api)
-Deployment platform (Vercel )
+Deployment platform (Vercel) 
 
 📂 Project Structure
 GasUllaVidu/
