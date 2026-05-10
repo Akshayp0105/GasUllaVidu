@@ -1,4 +1,4 @@
-# GasUllaVidu
+# GasUllaVidu : Resource sharing platform
 
 GasUllaVidu is a scalable and user-friendly platform built to solve real-world problems through an intuitive interface and efficient backend architecture. The project focuses on delivering a seamless user experience while maintaining performance, modularity, and clean design principles.
 
