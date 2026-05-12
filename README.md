@@ -4,6 +4,11 @@ GasUllaVidu is a scalable and user-friendly platform built to solve real-world p
 
 This application is designed with a strong emphasis on usability, responsiveness, and maintainability, making it suitable for both end-users and developers looking to extend or integrate the system.
 
+### 🚀 Latest Updates
+- **Backend**: Updated default AI model to `gpt-4o-mini` for better performance and cost-efficiency.
+- **Project**: Version bump to `0.1.1`.
+- **CI/CD**: Prepared for GitHub push and deployment sync.
+
 
 Features
 🔐 Secure authentication and user management
