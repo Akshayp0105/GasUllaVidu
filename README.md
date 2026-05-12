@@ -1,6 +1,7 @@
-# GasUllaVidu
+# GasUllaVidu : Resource sharing platform
 
 GasUllaVidu is a scalable and user-friendly platform built to solve real-world problems through an intuitive interface and efficient backend architecture. The project focuses on delivering a seamless user experience while maintaining performance, modularity, and clean design principles.
+
 
 This application is designed with a strong emphasis on usability, responsiveness, and maintainability, making it suitable for both end-users and developers looking to extend or integrate the system.
 
@@ -29,7 +30,7 @@ Firebase Firestore
 Tools & Services
 Git & GitHub
 API integrations (Firebase api,map api)
-Deployment platform (Vercel )
+Deployment platform (Vercel) 
 
 📂 Project Structure
 GasUllaVidu/
